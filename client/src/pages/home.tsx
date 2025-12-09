@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 const DEFAULT_COLORS = [
   "#FF5733",
@@ -38,13 +36,13 @@ function normalizeHex(value: string): string {
   return hex;
 }
 
-interface ColorItemProps {
+interface ColorRowProps {
   index: number;
   color: string;
   onColorChange: (color: string) => void;
 }
 
-function ColorItem({ index, color, onColorChange }: ColorItemProps) {
+function ColorRow({ index, color, onColorChange }: ColorRowProps) {
   const [inputValue, setInputValue] = useState(color);
   const [isInvalid, setIsInvalid] = useState(false);
   const [shouldShake, setShouldShake] = useState(false);
@@ -102,68 +100,49 @@ function ColorItem({ index, color, onColorChange }: ColorItemProps) {
   };
 
   return (
-    <Card className="p-4 flex flex-col gap-3 border-2 rounded-lg">
-      <div className="flex items-center justify-between gap-2">
-        <Label
-          htmlFor={`color-input-${index}`}
-          className="text-xs text-muted-foreground font-medium"
-        >
-          Color {index + 1}
-        </Label>
+    <>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground w-4 font-medium">
+          {index + 1}
+        </span>
+        <Input
+          id={`color-input-${index}`}
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          placeholder="#FF5733"
+          maxLength={7}
+          className={`font-mono text-sm h-8 px-2 ${
+            isInvalid
+              ? "border-destructive focus-visible:ring-destructive"
+              : ""
+          } ${shouldShake ? "animate-shake" : ""}`}
+          aria-label={`Color ${index + 1} hex input`}
+          aria-invalid={isInvalid}
+          data-testid={`color-input-${index}`}
+        />
+      </div>
+
+      <div className="flex items-center justify-center">
+        <input
+          type="color"
+          value={color.toLowerCase()}
+          onChange={handlePickerChange}
+          className="h-8 w-12 rounded border border-input cursor-pointer bg-transparent transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+          aria-label={`Color ${index + 1} picker`}
+          data-testid={`color-picker-${index}`}
+        />
       </div>
 
       <div
-        className="h-24 w-full rounded-md border-2 transition-colors duration-200"
+        className="h-8 w-full rounded border transition-colors duration-200"
         style={{ backgroundColor: color }}
         data-testid={`color-preview-${index}`}
-        aria-label={`Color ${index + 1} preview showing ${color}`}
+        aria-label={`Color ${index + 1} preview`}
         role="img"
       />
-
-      <div className="flex gap-2 items-center">
-        <div className="relative">
-          <input
-            type="color"
-            value={color.toLowerCase()}
-            onChange={handlePickerChange}
-            className="h-10 w-16 rounded border-2 border-input cursor-pointer bg-transparent p-0.5 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            aria-label={`Color ${index + 1} picker`}
-            data-testid={`color-picker-${index}`}
-          />
-        </div>
-
-        <div className="flex-1 relative">
-          <Input
-            id={`color-input-${index}`}
-            type="text"
-            value={inputValue}
-            onChange={handleInputChange}
-            onBlur={handleInputBlur}
-            placeholder="#FF5733"
-            maxLength={7}
-            className={`font-mono text-base h-10 px-3 focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-              isInvalid
-                ? "border-destructive focus-visible:ring-destructive"
-                : ""
-            } ${shouldShake ? "animate-shake" : ""}`}
-            aria-label={`Color ${index + 1} hex input`}
-            aria-invalid={isInvalid}
-            aria-describedby={isInvalid ? `color-error-${index}` : undefined}
-            data-testid={`color-input-${index}`}
-          />
-          {isInvalid && (
-            <span
-              id={`color-error-${index}`}
-              className="sr-only"
-              role="alert"
-              aria-live="polite"
-            >
-              Invalid hex color format. Use #RGB or #RRGGBB format.
-            </span>
-          )}
-        </div>
-      </div>
-    </Card>
+    </>
   );
 }
 
@@ -179,24 +158,34 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-6 py-8 md:py-12">
-        <header className="mb-8">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        <header className="mb-4 text-center">
           <h1
-            className="text-2xl font-semibold tracking-tight text-foreground"
+            className="text-xl font-semibold tracking-tight text-foreground"
             data-testid="page-title"
           >
             Hex Color Manager
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Введіть hex-код кольору або оберіть на палітрі
+          <p className="text-muted-foreground text-sm">
+            Введіть hex-код або оберіть колір на палітрі
           </p>
         </header>
 
-        <main>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <main className="bg-card border rounded-lg p-4">
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-2 items-center">
+            <div className="text-xs font-medium text-muted-foreground pb-1">
+              Hex Code
+            </div>
+            <div className="text-xs font-medium text-muted-foreground pb-1 text-center">
+              Picker
+            </div>
+            <div className="text-xs font-medium text-muted-foreground pb-1">
+              Preview
+            </div>
+
             {colors.map((color, index) => (
-              <ColorItem
+              <ColorRow
                 key={index}
                 index={index}
                 color={color}
